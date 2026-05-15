@@ -1,0 +1,11 @@
+shamefullyHoist: true
+
+hoistPattern:
+  - "*@heroui*"
+  - "*@nextui-org*"
+  - "*tailwindcss*"
+
+allowBuilds:
+  "@tailwindcss/oxide": true
+  sharp: true
+  unrs-resolver: true

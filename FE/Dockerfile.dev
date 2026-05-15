@@ -1,0 +1,19 @@
+FROM node:alpine
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Install dependencies first
+COPY package*.json ./
+COPY pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install
+
+COPY . .
+
+EXPOSE 3000
+
+ENV WATCHPACK_POLLING=true
+ENV CHOKIDAR_USEPOLLING=true
+
+CMD [ "pnpm", "dev" ]
