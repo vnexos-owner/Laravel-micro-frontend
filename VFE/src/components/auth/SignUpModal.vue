@@ -11,12 +11,14 @@ import CLoading from '../common/CLoading.vue'
 import webLocalStorage from '@/utils/webLocalStorage'
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '@/config'
 import webStorageClient from '@/utils/webStorageClient'
+import { useAuth } from './provider'
 
 const isOpen = ref(false)
 
 const { toast } = useToast()
 const isLoading = ref<boolean>(false)
 const errors = ref<Record<string, string>>({})
+const { fetchMe } = useAuth()
 
 function handleSubmit(e: SubmitEvent) {
   e.preventDefault()
@@ -43,6 +45,7 @@ function handleSubmit(e: SubmitEvent) {
       setAccessToken(val.access_token)
       toast('Đăng ký thành công!', 'success')
       isOpen.value = false
+      fetchMe()
     })
     .catch((r) => {
       if (r instanceof ApiError) {

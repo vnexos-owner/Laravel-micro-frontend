@@ -7,9 +7,8 @@ import { onMounted, watch } from 'vue'
 import { setAccessToken } from '@/utils/api'
 import webStorageClient from '@/utils/webStorageClient'
 
-const { user, isFetching, fetchMe } = useAuth()
+const { isFetching, fetchMe } = useAuth()
 
-watch(user, (val) => console.log(val))
 onMounted(() => {
   const token = webLocalStorage.get(REFRESH_TOKEN)
   setAccessToken(webStorageClient.get(ACCESS_TOKEN))

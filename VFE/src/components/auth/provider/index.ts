@@ -14,6 +14,13 @@ const { toast } = useToast()
 const isAuthenticated = computed(() => !!user.value)
 
 export function useAuth() {
+  function signout() {
+    clearAccessToken()
+    webLocalStorage.remove(REFRESH_TOKEN)
+    webStorageClient.remove(ACCESS_TOKEN)
+    user.value = null
+  }
+
   async function fetchMe(): Promise<User | null> {
     isFetchingUser.value = true
     try {
@@ -22,9 +29,7 @@ export function useAuth() {
 
       return res
     } catch {
-      clearAccessToken()
-      webLocalStorage.remove(REFRESH_TOKEN)
-      webStorageClient.remove(ACCESS_TOKEN)
+      signout();
 
       toast('Vui lòng đăng nhập lại', 'warning')
       return null
@@ -33,5 +38,5 @@ export function useAuth() {
     }
   }
 
-  return { user, isFetching: isFetchingUser, fetchMe, isAuthenticated }
+  return { user, isFetching: isFetchingUser, fetchMe, isAuthenticated, signout }
 }

@@ -11,10 +11,12 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from '@/config'
 import webStorageClient from '@/utils/webStorageClient'
 import { api, setAccessToken } from '@/utils/api'
 import CLoading from '../common/CLoading.vue'
+import { useAuth } from './provider'
 
 const isOpen = ref(false)
 const { toast } = useToast()
 const isLoading = ref<boolean>(false)
+const { fetchMe } = useAuth();
 
 function handleSubmin(e: SubmitEvent) {
   e.preventDefault()
@@ -36,6 +38,7 @@ function handleSubmin(e: SubmitEvent) {
       setAccessToken(val.access_token)
       toast('Đăng nhập thành công!', 'success')
       isOpen.value = false
+      fetchMe();
     })
     .catch(() => {
       toast('Đăng nhập thất bại!', 'warning')

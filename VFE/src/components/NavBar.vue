@@ -1,12 +1,21 @@
 <script lang="ts" setup>
+import { IconArrowRightFromSquare, IconDisplayPulse } from '@iconify-prerendered/vue-gravity-ui'
 import { useAuth } from './auth/provider'
 import SignInModal from './auth/SignInModal.vue'
 import SignUpModal from './auth/SignUpModal.vue'
+import CDropdown from './common/CDropdown.vue'
 import CUser from './common/CUser.vue'
 import LogoRikai from './LogoRikai.vue'
 import ThemSwitch from './ThemSwitch.vue'
+import { api } from '@/utils/api'
+import { authEndpoints } from '@/config/endpoints'
 
-const { isAuthenticated, user } = useAuth()
+const { isAuthenticated, user, signout } = useAuth()
+
+function handleSignout() {
+  signout();
+  api.post(authEndpoints.SIGN_OUT, {}).then(() => {})
+}
 </script>
 
 <template>
@@ -19,10 +28,17 @@ const { isAuthenticated, user } = useAuth()
       </div>
       <div class="flex items-center gap-2">
         <ThemSwitch />
-        <div v-if="isAuthenticated">
-          <CUser :user="user!" />
-        </div>
-        <div v-else>
+        <CDropdown v-if="isAuthenticated" :options="[
+          { label: 'Dashboard', icon: IconDisplayPulse, action: () => console.log('aaa')},
+          { label: 'Đăng xuất', icon: IconArrowRightFromSquare, class: 'text-danger-soft-foreground', action: handleSignout }
+        ]">
+          <template #trigger="{ toggle, isOpen, selectedLabel }">
+            <button :class="['cursor-pointer']" @click="toggle">
+              <CUser :user="user!" />
+            </button>
+          </template>
+        </CDropdown>
+        <div class="flex items-center gap-2" v-else>
           <SignInModal />
           <SignUpModal />
         </div>
