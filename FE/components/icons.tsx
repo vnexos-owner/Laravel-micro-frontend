@@ -1,10 +1,9 @@
 import * as React from "react";
-import Image from "next/image";
 
 import { IconSvgProps } from "@/types";
 
 export const Logo: React.FC<any> = ({ width = 36, ...props }) => (
-  <Image height={width} width={width} {...props} alt="RIKAI" src="/RIKAI.png" />
+  <img width={width} {...props} alt="RIKAI" src="/RIKAI.png" />
 );
 
 export const MoonFilledIcon = ({

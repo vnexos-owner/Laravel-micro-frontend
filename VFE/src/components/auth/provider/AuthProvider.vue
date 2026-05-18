@@ -3,7 +3,7 @@ import CLoading from '@/components/common/CLoading.vue'
 import { useAuth } from '.'
 import webLocalStorage from '@/utils/webLocalStorage'
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '@/config'
-import { onMounted, watch } from 'vue'
+import { onMounted } from 'vue'
 import { setAccessToken } from '@/utils/api'
 import webStorageClient from '@/utils/webStorageClient'
 

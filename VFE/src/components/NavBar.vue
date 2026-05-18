@@ -13,7 +13,7 @@ import { authEndpoints } from '@/config/endpoints'
 const { isAuthenticated, user, signout } = useAuth()
 
 function handleSignout() {
-  signout();
+  signout()
   api.post(authEndpoints.SIGN_OUT, {}).then(() => {})
 }
 </script>
@@ -28,11 +28,19 @@ function handleSignout() {
       </div>
       <div class="flex items-center gap-2">
         <ThemSwitch />
-        <CDropdown v-if="isAuthenticated" :options="[
-          { label: 'Dashboard', icon: IconDisplayPulse, action: () => console.log('aaa')},
-          { label: 'Đăng xuất', icon: IconArrowRightFromSquare, class: 'text-danger-soft-foreground', action: handleSignout }
-        ]">
-          <template #trigger="{ toggle, isOpen, selectedLabel }">
+        <CDropdown
+          v-if="isAuthenticated"
+          :options="[
+            { label: 'Dashboard', icon: IconDisplayPulse, href: '/dashboard' },
+            {
+              label: 'Đăng xuất',
+              icon: IconArrowRightFromSquare,
+              class: 'text-danger-soft-foreground',
+              action: handleSignout,
+            },
+          ]"
+        >
+          <template #trigger="{ toggle }">
             <button :class="['cursor-pointer']" @click="toggle">
               <CUser :user="user!" />
             </button>
