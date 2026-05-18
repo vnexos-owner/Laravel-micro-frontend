@@ -17,6 +17,7 @@ import { api } from '@/utils/api'
 import CLoading from '../common/CLoading.vue'
 import CEmpty from '../common/CEmpty.vue'
 import ClassListManagement_UpdateCourses_Add from './ClassListManagement_UpdateCourses_Add.vue'
+import ClassListManagement_UpdateCourses_Delete from './ClassListManagement_UpdateCourses_Delete.vue'
 
 const data = ref<Course[]>([])
 const isOpen = ref<boolean>(false)
@@ -24,11 +25,14 @@ const props = defineProps<{ classId: string }>()
 const isFetching = ref<boolean>(true)
 const { toast } = useToast()
 
-api
-  .get<Course[]>(classEndpoints.CLASSES_COURSES.replaceAll('{id}', props.classId))
-  .then((val) => (data.value = val))
-  .catch(() => toast('Có lỗi xảy ra khi cố gắng lấy danh sách môn học', 'error'))
-  .finally(() => (isFetching.value = false))
+function fetchClassCourse() {
+  api
+    .get<Course[]>(classEndpoints.CLASSES_COURSES.replaceAll('{id}', props.classId))
+    .then((val) => (data.value = val))
+    .catch(() => toast('Có lỗi xảy ra khi cố gắng lấy danh sách môn học', 'error'))
+    .finally(() => (isFetching.value = false))
+}
+fetchClassCourse()
 </script>
 
 <template>
@@ -45,7 +49,7 @@ api
     <template #header>
       <p class="text-lg font-semibold">Danh sách môn học</p>
     </template>
-    <ClassListManagement_UpdateCourses_Add :existed-courses="data" />
+    <ClassListManagement_UpdateCourses_Add :existed-courses="data" :class-id="classId" @refetch="fetchClassCourse" />
     <div class="m-3 p-2 rounded-lg bg-segment overflow-auto max-h-64 h-fit flex flex-col gap-2">
       <div v-if="data.length" class="flex gap-2 flex-col">
         <div
@@ -65,10 +69,7 @@ api
             <IconGraduationCap />
             <p class="w-11/12 text-sm">Tiên quyết: {{ course.prerequisite }}</p>
           </span>
-          <CIconButton
-            :icon="IconXmark"
-            classes="text-xs p-0.5 bg-danger-soft text-danger-soft-foreground hover:bg-danger-soft-hover absolute  -right-1 -top-1"
-          />
+          <ClassListManagement_UpdateCourses_Delete :clazz-id="classId" :course="course" @refetch="fetchClassCourse" />
         </div>
       </div>
       <CEmpty class="size-5 h-fit" v-else message="Không có môn học nào" />

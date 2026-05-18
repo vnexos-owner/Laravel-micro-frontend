@@ -166,8 +166,8 @@ export const api = {
     })
   },
 
-  delete<T = unknown>(endpoint: string, options?: FetchOptions) {
-    return apiFetch<T>(endpoint, { ...options, method: 'DELETE' })
+  delete<T = unknown>(endpoint: string, body?: unknown, options?: FetchOptions) {
+    return apiFetch<T>(endpoint, { ...options, method: 'DELETE', body: JSON.stringify(body) })
   },
 }
 

@@ -121,6 +121,7 @@ function AddUserForm({
   const [customGender, setCustomGender] = useState<string | undefined>(
     undefined,
   );
+  const [selectedDate, setSelectedDate] = useState<any>(null);
 
   const [isCustomGenderModalOpen, setIsCustomGenderModalOpen] = useState(false);
 
@@ -251,6 +252,8 @@ function AddUserForm({
           isLoading={isLoading}
           label="Ngày sinh"
           name="dob"
+          value={selectedDate}
+          onChange={setSelectedDate}
         />
         <>
           <input
