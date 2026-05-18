@@ -1,5 +1,9 @@
 <script lang="ts" setup>
-import { IconArrowRightFromSquare, IconDisplayPulse } from '@iconify-prerendered/vue-gravity-ui'
+import {
+  IconArrowRightFromSquare,
+  IconDisplayPulse,
+  IconListUl,
+} from '@iconify-prerendered/vue-gravity-ui'
 import { useAuth } from './auth/provider'
 import SignInModal from './auth/SignInModal.vue'
 import SignUpModal from './auth/SignUpModal.vue'
@@ -9,12 +13,17 @@ import LogoRikai from './LogoRikai.vue'
 import ThemSwitch from './ThemSwitch.vue'
 import { api } from '@/utils/api'
 import { authEndpoints } from '@/config/endpoints'
+import { checkRole } from '@/utils/checkUserRole'
+import type { User } from '@/types'
+import { useRouter } from 'vue-router'
 
 const { isAuthenticated, user, signout } = useAuth()
+const router = useRouter()
 
 function handleSignout() {
   signout()
   api.post(authEndpoints.SIGN_OUT, {}).then(() => {})
+  router.push('/')
 }
 </script>
 
@@ -31,7 +40,18 @@ function handleSignout() {
         <CDropdown
           v-if="isAuthenticated"
           :options="[
-            { label: 'Dashboard', icon: IconDisplayPulse, href: '/dashboard' },
+            {
+              label: 'Bảng điều khiển',
+              icon: IconDisplayPulse,
+              href: '/dashboard',
+              hidden: !checkRole(user as User, 'admin'),
+            },
+            {
+              label: 'Quản lý lớp học',
+              icon: IconListUl,
+              to: '/class',
+              hidden: !checkRole(user as User, 'teacher'),
+            },
             {
               label: 'Đăng xuất',
               icon: IconArrowRightFromSquare,

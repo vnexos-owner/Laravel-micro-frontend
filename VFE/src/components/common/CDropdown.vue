@@ -17,6 +17,7 @@ export type DropdownOption =
       /** Callback — invoked on click */
       action?: () => void
       group?: never
+      hidden?: boolean
     }
   | {
       group: string
@@ -29,6 +30,7 @@ export type DropdownOption =
       to?: never
       href?: never
       action?: never
+      hidden?: never
     }
 
 type Variant = 'default' | 'ghost' | 'outlined'
@@ -321,7 +323,7 @@ onBeforeUnmount(() => {
           </li>
 
           <template
-            v-for="(item, index) in filteredOptions"
+            v-for="(item, index) in filteredOptions.filter((option) => !option.hidden)"
             :key="'value' in item ? item.value : index"
           >
             <!-- Group label -->

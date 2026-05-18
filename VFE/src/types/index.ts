@@ -32,3 +32,36 @@ export interface User {
   roles: string[]
   deleted_at: string | null
 }
+
+export interface Semester {
+  id: string
+  name: string
+  start_time: string
+  end_time: string
+  is_current: boolean
+  created_at: string | null
+  updated_at: string | null
+  deleted_at: string | null
+}
+
+export interface Class {
+  id: string
+  name: string
+  semester_id: string
+  semester: Semester
+  homeroom_teacher_id: string
+  homeroom_teacher: User
+  created_at: string | null
+  updated_at: string | null
+  deleted_at: string | null
+}
+
+export interface Course {
+  id: string
+  name: string
+  code: string
+  prerequisite: string | null
+  created_at: string | null
+  updated_at: string | null
+  deleted_at: string | null
+}

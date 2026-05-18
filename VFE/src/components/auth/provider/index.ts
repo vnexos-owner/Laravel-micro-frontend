@@ -2,7 +2,7 @@ import { useToast } from '@/components/common/toast'
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '@/config'
 import { authEndpoints } from '@/config/endpoints'
 import type { User } from '@/types'
-import { api, clearAccessToken } from '@/utils/api'
+import { api, ApiError, clearAccessToken } from '@/utils/api'
 import webLocalStorage from '@/utils/webLocalStorage'
 import webStorageClient from '@/utils/webStorageClient'
 import { computed, ref } from 'vue'
@@ -28,8 +28,11 @@ export function useAuth() {
       user.value = res
 
       return res
-    } catch {
-      signout();
+    } catch (err) {
+      clearAccessToken()
+      if (err instanceof ApiError) {
+        if (err.status == 401) signout()
+      }
 
       toast('Vui lòng đăng nhập lại', 'warning')
       return null
