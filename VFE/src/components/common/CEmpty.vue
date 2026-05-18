@@ -7,7 +7,7 @@ withDefaults(defineProps<{ message?: string }>(), {
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center gap-1">
+  <div class="flex flex-col items-center justify-center gap-1 w-full">
     <span class="text-7xl text-muted">
       <IconFolderOpen />
     </span>

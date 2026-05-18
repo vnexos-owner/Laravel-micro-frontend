@@ -14,6 +14,10 @@ const accountEndpoints = {
   USERS_CLASSES: '/users/classes',
 }
 
+const courseEndpoints = {
+  COURSES: '/courses',
+}
+
 const classEndpoints = {
   CLASSES: '/classes',
   CLASSES_ID: '/classes/{id}',
@@ -22,4 +26,4 @@ const classEndpoints = {
   CLASSES_STUDENTS: '/classes/{id}/students',
 }
 
-export { authEndpoints, accountEndpoints, semesterEndpoints, classEndpoints }
+export { authEndpoints, accountEndpoints, semesterEndpoints, classEndpoints, courseEndpoints }

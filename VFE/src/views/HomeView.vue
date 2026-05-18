@@ -34,7 +34,7 @@ api
 
       <div class="relative mt-5 bg-segment text-segment-foreground rounded-2xl p-10 shadow-accent">
         <h1 class="text-xl font-medium">Danh sách lớp học</h1>
-        <ClassList v-if="!!currentSemester" />
+        <ClassList />
       </div>
     </div>
   </section>

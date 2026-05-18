@@ -22,12 +22,8 @@ api
 </script>
 
 <template>
-  <div class="grid grid-cols-4 justify-around" v-if="classes.length">
-    <div
-      class="m-5 p-2 rounded-2xl shadow-lg w-full h-fit"
-      v-for="clazz in classes"
-      :key="clazz.id"
-    >
+  <div class="grid grid-cols-4 justify-around mt-4 gap-4" v-if="classes.length">
+    <div class="p-2 rounded-2xl shadow-lg w-full h-fit" v-for="clazz in classes" :key="clazz.id">
       <p class="font-semibold text-lg">{{ clazz.name }}</p>
       <span class="flex gap-2 items-center">
         <IconPerson />

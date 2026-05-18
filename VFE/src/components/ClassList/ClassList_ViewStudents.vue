@@ -41,9 +41,16 @@ api
     </template>
 
     <div class="m-3 p-2 rounded-lg bg-segment overflow-auto max-h-64 h-fit flex flex-col gap-2">
-      <div class="p-2 bg-segment shadow-2xl rounded-2xl" v-for="student in data" :key="student.id">
-        <CUser :user="student" />
+      <div v-if="data.length">
+        <div
+          class="p-2 bg-segment shadow-2xl rounded-2xl"
+          v-for="student in data"
+          :key="student.id"
+        >
+          <CUser :user="student" />
+        </div>
       </div>
+      <CEmpty class="size-5 h-fit" v-else />
       <CLoading v-if="isFetching" />
     </div>
   </CModal>

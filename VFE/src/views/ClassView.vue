@@ -39,7 +39,7 @@ api
       </div>
 
       <div class="relative mt-5 bg-segment text-segment-foreground rounded-2xl p-10 shadow-accent">
-        <CreateClassModal />
+        <CreateClassModal v-if="!!currentSemester" :semester="currentSemester" />
         <ClassListManagement />
       </div>
     </div>

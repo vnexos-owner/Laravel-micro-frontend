@@ -19,6 +19,13 @@ export interface AuthResponse {
   expires_in: number
 }
 
+export interface CreateClassBody {
+  name: string
+  homeroom_teacher_id: string
+  semester_id: string
+}
+
+// ---------------------------------------------------------
 export interface User {
   id: string
   name: string

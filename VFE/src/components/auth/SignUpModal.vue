@@ -74,7 +74,14 @@ function handleSubmit(e: SubmitEvent) {
     Đăng ký
   </button>
 
-  <CModal :open="isOpen" @close="isOpen = false" size="sm" hide-close-button>
+  <CModal
+    :open="isOpen"
+    @close="isOpen = false"
+    size="sm"
+    hide-close-button
+    :close-on-backdrop="!isLoading"
+    :close-on-esc="!isLoading"
+  >
     <template #header>
       <div class="flex flex-col items-center justify-center">
         <LogoRikai :size="75" />

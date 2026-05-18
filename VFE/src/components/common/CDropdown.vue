@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, type CSSProperties } from 'vue'
 import { RouterLink } from 'vue-router'
 
 export type DropdownOption =
@@ -73,6 +73,8 @@ const isOpen = ref(false)
 const searchQuery = ref('')
 const focusedIndex = ref(-1)
 const dropdownRef = ref<HTMLElement | null>(null)
+const panelRef = ref<HTMLElement | null>(null)
+const panelStyle = ref<CSSProperties>({})
 
 const sizeClasses = computed(
   (): string =>
@@ -121,15 +123,29 @@ const selectedLabel = computed((): string => {
   return found?.label ?? ''
 })
 
+function updatePosition(): void {
+  if (!isOpen.value || !dropdownRef.value) return
+  const rect = dropdownRef.value.getBoundingClientRect()
+  const panelWidth = Math.max(rect.width, panelRef.value?.offsetWidth ?? 0)
+  panelStyle.value = {
+    top: `${rect.bottom + 6}px`,
+    left: props.align === 'right' ? `${rect.right - panelWidth}px` : `${rect.left}px`,
+    minWidth: `${rect.width}px`,
+  }
+}
+
 function toggle(): void {
   if (!props.disabled) isOpen.value ? close() : open()
 }
+
 function open(): void {
   isOpen.value = true
   searchQuery.value = ''
   focusedIndex.value = -1
   emit('open')
+  nextTick(updatePosition)
 }
+
 function close(): void {
   isOpen.value = false
   emit('close')
@@ -148,16 +164,13 @@ function select(item: DropdownOption): void {
   if ('group' in item) return
   close()
 
-  // action callback
   if (item.action) {
     item.action()
     return
   }
 
-  // href / to are handled by <a> / <RouterLink> in the template — nothing to do here
   if (item.to || item.href) return
 
-  // value-based selection
   if (item.value === undefined) return
   if (props.multiple) {
     const values = Array.isArray(props.modelValue) ? [...props.modelValue] : []
@@ -173,7 +186,13 @@ function select(item: DropdownOption): void {
 }
 
 function onClickOutside(e: MouseEvent): void {
-  if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) close()
+  if (
+    dropdownRef.value &&
+    !dropdownRef.value.contains(e.target as Node) &&
+    panelRef.value &&
+    !panelRef.value.contains(e.target as Node)
+  )
+    close()
 }
 
 function onKeydown(e: KeyboardEvent): void {
@@ -201,10 +220,14 @@ function onKeydown(e: KeyboardEvent): void {
 
 onMounted(() => {
   document.addEventListener('mousedown', onClickOutside)
+  window.addEventListener('scroll', updatePosition, true)
+  window.addEventListener('resize', updatePosition)
   dropdownRef.value?.addEventListener('keydown', onKeydown)
 })
 onBeforeUnmount(() => {
   document.removeEventListener('mousedown', onClickOutside)
+  window.removeEventListener('scroll', updatePosition, true)
+  window.removeEventListener('resize', updatePosition)
   dropdownRef.value?.removeEventListener('keydown', onKeydown)
 })
 </script>
@@ -261,182 +284,196 @@ onBeforeUnmount(() => {
       </button>
     </slot>
 
-    <!-- Panel -->
-    <Transition
-      enter-active-class="transition-all duration-150 ease-out"
-      enter-from-class="opacity-0 -translate-y-1 scale-[0.98]"
-      enter-to-class="opacity-100 translate-y-0 scale-100"
-      leave-active-class="transition-all duration-150 ease-in"
-      leave-from-class="opacity-100 translate-y-0 scale-100"
-      leave-to-class="opacity-0 -translate-y-1 scale-[0.98]"
-    >
-      <div
-        v-if="isOpen"
-        role="listbox"
-        class="absolute top-[calc(100%+6px)] z-50 min-w-full max-h-72 overflow-y-auto rounded-lg border border-border bg-overlay text-overlay-foreground shadow-overlay p-1"
-        :class="align === 'right' ? 'right-0' : 'left-0'"
+    <!-- Panel — teleported to body to escape any overflow/relative ancestor -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition-all duration-150 ease-out"
+        enter-from-class="opacity-0 -translate-y-1 scale-[0.98]"
+        enter-to-class="opacity-100 translate-y-0 scale-100"
+        leave-active-class="transition-all duration-150 ease-in"
+        leave-from-class="opacity-100 translate-y-0 scale-100"
+        leave-to-class="opacity-0 -translate-y-1 scale-[0.98]"
       >
-        <!-- Search -->
         <div
-          v-if="searchable"
-          class="flex items-center gap-2 px-2.5 py-1.5 mb-1 border-b border-separator"
+          v-if="isOpen"
+          ref="panelRef"
+          role="listbox"
+          class="fixed z-50 max-h-72 overflow-y-auto rounded-lg border border-border bg-overlay text-overlay-foreground shadow-overlay p-1"
+          :style="panelStyle"
         >
-          <svg
-            class="text-muted shrink-0"
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+          <!-- Search -->
+          <div
+            v-if="searchable"
+            class="flex items-center gap-2 px-2.5 py-1.5 mb-1 border-b border-separator"
           >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Search..."
-            class="flex-1 bg-transparent border-none outline-none text-sm text-field-foreground placeholder:text-muted"
-            @click.stop
-          />
-        </div>
-
-        <!-- Header slot -->
-        <div
-          v-if="$slots.header"
-          class="px-2.5 py-1.5 text-xs text-muted border-b border-separator mb-1"
-        >
-          <slot name="header" />
-        </div>
-
-        <!-- List -->
-        <ul class="flex flex-col gap-px list-none m-0 p-0">
-          <li
-            v-if="filteredOptions.length === 0"
-            class="px-2.5 py-4 text-center text-sm text-muted"
-          >
-            <slot name="empty">No options found</slot>
-          </li>
-
-          <template
-            v-for="(item, index) in filteredOptions.filter((option) => !option.hidden)"
-            :key="'value' in item ? item.value : index"
-          >
-            <!-- Group label -->
-            <li
-              v-if="item.group"
-              class="px-2.5 pt-1.5 pb-0.5 text-[11px] font-semibold uppercase tracking-widest text-muted"
+            <svg
+              class="text-muted shrink-0"
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             >
-              {{ item.group }}
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search..."
+              class="flex-1 bg-transparent border-none outline-none text-sm text-field-foreground placeholder:text-muted"
+              @click.stop
+            />
+          </div>
+
+          <!-- Header slot -->
+          <div
+            v-if="$slots.header"
+            class="px-2.5 py-1.5 text-xs text-muted border-b border-separator mb-1"
+          >
+            <slot name="header" />
+          </div>
+
+          <!-- List -->
+          <ul class="flex flex-col gap-px list-none m-0 p-0">
+            <li
+              v-if="filteredOptions.length === 0"
+              class="px-2.5 py-4 text-center text-sm text-muted"
+            >
+              <slot name="empty">No options found</slot>
             </li>
 
-            <!-- Option — RouterLink -->
-            <RouterLink
-              v-else-if="!item.group && item.to"
-              :to="item.to"
-              @click="!item.disabled && select(item)"
-              @mouseenter="focusedIndex = index"
-              class="flex items-center justify-between px-2.5 py-2 rounded-md text-sm select-none transition-colors duration-100 no-underline"
-              :class="[
-                item.disabled
-                  ? 'opacity-disabled cursor-not-allowed pointer-events-none'
-                  : 'cursor-pointer',
-                isSelected(item)
-                  ? 'bg-accent/10 text-accent font-medium'
-                  : 'hover:bg-default text-overlay-foreground',
-              ]"
+            <template
+              v-for="(item, index) in filteredOptions.filter((option) => !option.hidden)"
+              :key="'value' in item ? item.value : index"
             >
-              <span :class="['flex flex-col font-medium flex-1 overflow-hidden', item.class ?? '']">
-                <span class="truncate">{{ item.label }}</span>
-                <span v-if="item.description" class="text-xs text-muted truncate">{{
-                  item.description
-                }}</span>
-              </span>
-              <span :class="['text-muted', item.class ?? '']" v-if="item.icon">
-                <component :is="item.icon" />
-              </span>
-            </RouterLink>
+              <!-- Group label -->
+              <li
+                v-if="item.group"
+                class="px-2.5 pt-1.5 pb-0.5 text-[11px] font-semibold uppercase tracking-widest text-muted"
+              >
+                {{ item.group }}
+              </li>
 
-            <!-- Option — external href -->
-            <a
-              v-else-if="!item.group && item.href"
-              :href="item.href"
-              rel="noopener noreferrer"
-              @click="!item.disabled && select(item)"
-              @mouseenter="focusedIndex = index"
-              class="flex font-medium items-center justify-between px-2.5 py-2 rounded-md text-sm select-none transition-colors duration-100 no-underline"
-              :class="[
-                item.disabled
-                  ? 'opacity-disabled cursor-not-allowed pointer-events-none'
-                  : 'cursor-pointer',
-                'hover:bg-default text-overlay-foreground',
-              ]"
-            >
-              <span class="flex flex-col flex-1 overflow-hidden">
-                <span class="truncate font-medium">{{ item.label }}</span>
-                <span v-if="item.description" class="text-xs text-muted truncate">{{
-                  item.description
-                }}</span>
-              </span>
-              <span class="text-muted" v-if="item.icon">
-                <component :is="item.icon" />
-              </span>
-            </a>
-
-            <!-- Option — action / value -->
-            <li
-              v-else
-              role="option"
-              :aria-selected="isSelected(item)"
-              :aria-disabled="item.disabled"
-              @click="!item.disabled && select(item)"
-              @mouseenter="focusedIndex = index"
-              class="flex items-center gap-2 px-2.5 py-2 rounded-md text-sm select-none transition-colors duration-100"
-              :class="[
-                item.disabled ? 'opacity-disabled cursor-not-allowed' : 'cursor-pointer',
-                isSelected(item) ? 'bg-accent/10 text-accent font-medium' : 'hover:bg-default',
-              ]"
-            >
-              <span :class="['flex flex-col flex-1 overflow-hidden font-medium', item.class ?? '']">
-                <span class="truncate">{{ item.label }}</span>
-                <span v-if="item.description" class="text-xs text-muted truncate">{{
-                  item.description
-                }}</span>
-              </span>
-              <span v-if="isSelected(item)" class="flex items-center text-accent shrink-0 ml-auto">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+              <!-- Option — RouterLink -->
+              <RouterLink
+                v-else-if="!item.group && item.to"
+                :to="item.to"
+                @click="!item.disabled && select(item)"
+                @mouseenter="focusedIndex = index"
+                class="flex items-center justify-between px-2.5 py-2 rounded-md text-sm select-none transition-colors duration-100 no-underline"
+                :class="[
+                  item.disabled
+                    ? 'opacity-disabled cursor-not-allowed pointer-events-none'
+                    : 'cursor-pointer',
+                  isSelected(item)
+                    ? 'bg-accent/10 text-accent font-medium'
+                    : 'hover:bg-default text-overlay-foreground',
+                ]"
+              >
+                <span
+                  :class="['flex flex-col font-medium flex-1 overflow-hidden', item.class ?? '']"
                 >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </span>
-              <span :class="[item.class ?? 'text-muted']" v-if="item.icon">
-                <component :is="item.icon" />
-              </span>
-            </li>
-          </template>
-        </ul>
+                  <span class="truncate">{{ item.label }}</span>
+                  <span v-if="item.description" class="text-xs text-muted truncate">{{
+                    item.description
+                  }}</span>
+                </span>
+                <span :class="['text-muted', item.class ?? '']" v-if="item.icon">
+                  <component :is="item.icon" />
+                </span>
+              </RouterLink>
 
-        <!-- Footer slot -->
-        <div
-          v-if="$slots.footer"
-          class="px-2.5 py-1.5 text-xs text-muted border-t border-separator mt-1"
-        >
-          <slot name="footer" />
+              <!-- Option — external href -->
+              <a
+                v-else-if="!item.group && item.href"
+                :href="item.href"
+                rel="noopener noreferrer"
+                @click="!item.disabled && select(item)"
+                @mouseenter="focusedIndex = index"
+                class="flex font-medium items-center justify-between px-2.5 py-2 rounded-md text-sm select-none transition-colors duration-100 no-underline"
+                :class="[
+                  item.disabled
+                    ? 'opacity-disabled cursor-not-allowed pointer-events-none'
+                    : 'cursor-pointer',
+                  'hover:bg-default text-overlay-foreground',
+                ]"
+              >
+                <span class="flex flex-col flex-1 overflow-hidden">
+                  <span class="truncate font-medium">{{ item.label }}</span>
+                  <span v-if="item.description" class="text-xs text-muted truncate">{{
+                    item.description
+                  }}</span>
+                </span>
+                <span class="text-muted" v-if="item.icon">
+                  <component :is="item.icon" />
+                </span>
+              </a>
+
+              <!-- Option — action / value -->
+              <li
+                v-else
+                role="option"
+                :aria-selected="isSelected(item)"
+                :aria-disabled="item.disabled"
+                @click="!item.disabled && select(item)"
+                @mouseenter="focusedIndex = index"
+                class="flex items-center gap-2 px-2.5 py-2 rounded-md text-sm select-none transition-colors duration-100"
+                :class="[
+                  item.disabled ? 'opacity-disabled cursor-not-allowed' : 'cursor-pointer',
+                  isSelected(item) ? 'bg-accent/10 text-accent font-medium' : 'hover:bg-default',
+                ]"
+              >
+                <span
+                  :class="[
+                    'flex flex-col flex-1 overflow-hidden font-medium',
+                    item.class ?? '',
+                    item.disabled ? 'text-muted' : '',
+                  ]"
+                >
+                  <span class="truncate">{{ item.label }}</span>
+                  <span v-if="item.description" class="text-xs text-muted truncate">{{
+                    item.description
+                  }}</span>
+                </span>
+                <span
+                  v-if="isSelected(item)"
+                  class="flex items-center text-accent shrink-0 ml-auto"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </span>
+                <span :class="[item.class ?? 'text-muted']" v-if="item.icon">
+                  <component :is="item.icon" />
+                </span>
+              </li>
+            </template>
+          </ul>
+
+          <!-- Footer slot -->
+          <div
+            v-if="$slots.footer"
+            class="px-2.5 py-1.5 text-xs text-muted border-t border-separator mt-1"
+          >
+            <slot name="footer" />
+          </div>
         </div>
-      </div>
-    </Transition>
+      </Transition>
+    </Teleport>
   </div>
 </template>

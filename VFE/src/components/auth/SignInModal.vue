@@ -16,7 +16,7 @@ import { useAuth } from './provider'
 const isOpen = ref(false)
 const { toast } = useToast()
 const isLoading = ref<boolean>(false)
-const { fetchMe } = useAuth();
+const { fetchMe } = useAuth()
 
 function handleSubmin(e: SubmitEvent) {
   e.preventDefault()
@@ -38,7 +38,7 @@ function handleSubmin(e: SubmitEvent) {
       setAccessToken(val.access_token)
       toast('Đăng nhập thành công!', 'success')
       isOpen.value = false
-      fetchMe();
+      fetchMe()
     })
     .catch(() => {
       toast('Đăng nhập thất bại!', 'warning')
@@ -57,7 +57,14 @@ function handleSubmin(e: SubmitEvent) {
     Đăng nhập
   </button>
 
-  <CModal :open="isOpen" @close="isOpen = false" size="sm" hide-close-button>
+  <CModal
+    :open="isOpen"
+    @close="isOpen = false"
+    size="sm"
+    hide-close-button
+    :close-on-backdrop="!isLoading"
+    :close-on-esc="!isLoading"
+  >
     <template #header>
       <div class="flex flex-col items-center justify-center">
         <LogoRikai :size="75" />
