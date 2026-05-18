@@ -4,7 +4,6 @@ import {
   IconBookmark,
   IconBookOpen,
   IconGraduationCap,
-  IconXmark,
 } from '@iconify-prerendered/vue-gravity-ui'
 import CIconButton from '../common/CIconButton.vue'
 import CTooltip from '../common/CTooltip.vue'
