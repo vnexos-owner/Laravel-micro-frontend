@@ -32,7 +32,7 @@ api
 <template>
   <CTooltip placement="top">
     <CIconButton
-      classes="bg-warning-soft text-warning-soft-foreground hover:bg-warning-soft-hover"
+      classes="bg-warning-soft text-warning-soft-foreground hover:bg-warning-soft-hover p-2"
       :icon="IconBookOpen"
       @click="isOpen = true"
     />
@@ -43,8 +43,8 @@ api
     <template #header>
       <p class="text-lg font-semibold">Danh sách môn học</p>
     </template>
-    <div class="m-3 p-2 rounded-lg bg-segment overflow-auto max-h-64 h-fit flex flex-col gap-2">
-      <div v-if="data.length">
+    <div class="m-3 p-2 rounded-lg bg-segment overflow-auto max-h-64 h-fit">
+      <div v-if="data.length" class="flex flex-col gap-2">
         <div class="p-2 bg-segment shadow-2xl rounded-2xl" v-for="course in data" :key="course.id">
           <span class="flex gap-1.5 font-medium items-center">
             <IconBook />

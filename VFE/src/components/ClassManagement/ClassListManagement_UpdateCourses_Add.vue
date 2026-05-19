@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import CDropdown from '../common/CDropdown.vue'
 import type { Course } from '@/types'
 import { useCourseList } from './useCourseList'
@@ -26,8 +26,6 @@ const data = computed(() =>
   })),
 )
 
-if (courses.value.length) refetch()
-
 async function addCourse() {
   isLoading.value = true
   try {
@@ -45,6 +43,10 @@ async function addCourse() {
     isLoading.value = false
   }
 }
+
+onMounted(() => {
+  if (!courses.value.length) refetch()
+})
 </script>
 
 <template>

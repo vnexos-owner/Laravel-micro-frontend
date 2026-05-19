@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { IconBookmark, IconPersons } from '@iconify-prerendered/vue-gravity-ui'
+import { IconBookmark } from '@iconify-prerendered/vue-gravity-ui'
 import CLoading from '../common/CLoading.vue'
 import CEmpty from '../common/CEmpty.vue'
 import { useClassManagement } from './useClassManagement'
-import CTooltip from '../common/CTooltip.vue'
-import CIconButton from '../common/CIconButton.vue'
 import ClassListManagement_Delete from './ClassListManagement_Delete.vue'
 import ClassListManagement_Update from './ClassListManagement_Update.vue'
 import ClassListManagement_UpdateCourses from './ClassListManagement_UpdateCourses.vue'
+import ClassListManagement_UpdateStudents from './ClassListManagement_UpdateStudents.vue'
 
 const { refetch, isLoading, classes } = useClassManagement()
 
@@ -28,14 +27,7 @@ refetch()
       </span>
       <div class="flex justify-end gap-2">
         <ClassListManagement_UpdateCourses :class-id="clazz.id" />
-        <CTooltip placement="top">
-          <CIconButton
-            classes="bg-accent-soft text-accent-soft-foreground hover:bg-accent-soft-hover p-2"
-            :icon="IconPersons"
-          />
-
-          <template #tooltip>Chỉnh sửa danh sách học sinh</template>
-        </CTooltip>
+        <ClassListManagement_UpdateStudents :class-id="clazz.id" />
         <ClassListManagement_Update :clazz="clazz" />
       </div>
       <ClassListManagement_Delete :clazz="clazz" />

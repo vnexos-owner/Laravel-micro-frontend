@@ -27,17 +27,17 @@ services:
   ui:
     build:
       context: ./FE
-      dockerfile: Dockerfile.dev
-      # dockerfile: Dockerfile
+      # dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: laravel_ui
-    volumes:
-      - ./FE:/app
-      - /app/node_modules
+    # volumes:
+    #   - ./FE:/app
+    #   - /app/node_modules
     environment:
-      - NODE_ENV=development
-      # - NODE_ENV=production
-      - WATCHPACK_POLLING=true # Enable polling (needed in Docker)
-      - CHOKIDAR_USEPOLLING=true # Fallback polling watcher
+      # - NODE_ENV=development
+      - NODE_ENV=production
+      # - WATCHPACK_POLLING=true # Enable polling (needed in Docker)
+      # - CHOKIDAR_USEPOLLING=true # Fallback polling watcher
     networks:
       - laravel_network
   app:

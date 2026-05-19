@@ -188,14 +188,14 @@ function CourseTab() {
                       <Tooltip closeDelay={0} delay={0}>
                         <Button
                           isIconOnly
-                          className="size-7 mr-1 bg-blue-200/80 text-blue-500 dark:text-blue-700"
+                          className="size-7 mr-1 bg-accent-soft text-accent-soft-foreground hover:bg-accent-soft-hover"
                           onPress={() => setUpdatingCourse(course)}
                         >
                           <PencilToLine />
                         </Button>
                         <Tooltip.Content
                           showArrow
-                          className="bg-blue-200/80 text-blue-500 dark:text-blue-700"
+                          className="bg-accent-soft text-accent-soft-foreground hover:bg-accent-soft-hover"
                           placement="top"
                         >
                           Chỉnh sửa môn học
