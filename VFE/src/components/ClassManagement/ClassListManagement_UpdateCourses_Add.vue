@@ -7,7 +7,7 @@ import CIconButton from '../common/CIconButton.vue'
 import { IconArrowRotateLeft, IconPlus } from '@iconify-prerendered/vue-gravity-ui'
 import CTooltip from '../common/CTooltip.vue'
 import { api } from '@/utils/api'
-import { classEndpoints, courseEndpoints } from '@/config/endpoints'
+import { classEndpoints } from '@/config/endpoints'
 import { useToast } from '../common/toast'
 
 const { courses, refetch, isFetching } = useCourseList()
@@ -15,7 +15,7 @@ const props = defineProps<{ existedCourses: Course[]; classId: string }>()
 const emit = defineEmits<{ refetch: [] }>()
 
 const selectedCourse = ref<string | null>(null)
-const { toast } = useToast();
+const { toast } = useToast()
 const isLoading = ref<boolean>(false)
 
 const data = computed(() =>
@@ -26,17 +26,19 @@ const data = computed(() =>
   })),
 )
 
-courses.value.length || refetch()
+if (courses.value.length) refetch()
 
 async function addCourse() {
   isLoading.value = true
   try {
     console.log(props.classId)
-    await api.post(classEndpoints.CLASSES_COURSES.replaceAll('{id}', props.classId), { course_id: selectedCourse.value })
+    await api.post(classEndpoints.CLASSES_COURSES.replaceAll('{id}', props.classId), {
+      course_id: selectedCourse.value,
+    })
     toast('Thêm môn học thành công', 'success')
     selectedCourse.value = null
     emit('refetch')
-  } catch(err) {
+  } catch (err) {
     console.log(err)
     toast('Có lỗi xảy ra khi thêm môn học vào lớp', 'error')
   } finally {

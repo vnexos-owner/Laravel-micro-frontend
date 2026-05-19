@@ -135,7 +135,9 @@ function updatePosition(): void {
 }
 
 function toggle(): void {
-  if (!props.disabled) isOpen.value ? close() : open()
+  if (!props.disabled)
+    if (isOpen.value) close()
+    else open()
 }
 
 function open(): void {
@@ -176,7 +178,10 @@ function select(item: DropdownOption): void {
     const values = Array.isArray(props.modelValue) ? [...props.modelValue] : []
     const val = item.value as string | number
     const idx = values.indexOf(val)
-    idx === -1 ? values.push(val) : values.splice(idx, 1)
+
+    if (idx === -1) values.push(val)
+    else values.splice(idx, 1)
+
     emit('update:modelValue', values)
     emit('change', values)
   } else {
