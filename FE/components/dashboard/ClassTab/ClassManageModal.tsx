@@ -72,9 +72,9 @@ function ClassStudentTab({
     refetch: refetchCS,
   } = useGetClassStudentsQuery(id);
 
-  const classStudentDisabled = (id: string) =>
-    !!(classStudents as User[])?.find(
-      (val) => val.id === id || id === homeroom_teacher_id,
+  const classStudentDisabled = (id: string) => 
+    id === homeroom_teacher_id || !!(classStudents as User[])?.find(
+      (val) => val.id === id,
     );
 
   const customFilter = (textValue: string, inputValue: string) => {
