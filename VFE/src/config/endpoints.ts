@@ -11,6 +11,7 @@ const semesterEndpoints = {
 }
 
 const accountEndpoints = {
+  USERS: '/users',
   USERS_CLASSES: '/users/classes',
 }
 

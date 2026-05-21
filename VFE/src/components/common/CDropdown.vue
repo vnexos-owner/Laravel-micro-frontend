@@ -1,10 +1,18 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, nextTick, type CSSProperties } from 'vue'
+import {
+  ref,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  type CSSProperties,
+  type VNode,
+} from 'vue'
 import { RouterLink } from 'vue-router'
 
 export type DropdownOption =
   | {
-      label: string
+      label: string | unknown
       value?: string | number
       description?: string
       class?: string
@@ -48,6 +56,14 @@ const props = withDefaults(
     multiple?: boolean
     searchable?: boolean
     disabled?: boolean
+    /**
+     * Global render function applied to every option row.
+     * Receives the option value and full option object, returns a VNode.
+     *
+     * @example
+     * :renderOption="(value, option) => h(UserCard, { user: option.label })"
+     */
+    renderOption?: (value: string | number | undefined, option: DropdownOption) => VNode
   }>(),
   {
     modelValue: null,
@@ -100,12 +116,15 @@ const filteredOptions = computed((): DropdownOption[] => {
   return props.options.filter(
     (o) =>
       'group' in o ||
-      o.label?.toLowerCase().includes(q) ||
+      (typeof o.label === 'string' && o.label.toLowerCase().includes(q)) ||
       o.description?.toLowerCase().includes(q),
   )
 })
 
 const selectedLabel = computed((): string => {
+  const labelToString = (label: string | unknown): string =>
+    typeof label === 'string' ? label : ''
+
   if (props.multiple) {
     const values = Array.isArray(props.modelValue) ? props.modelValue : []
     return props.options
@@ -113,14 +132,14 @@ const selectedLabel = computed((): string => {
         (o: DropdownOption): o is Extract<DropdownOption, { value: string | number }> =>
           'value' in o && values.includes(o.value as string | number),
       )
-      .map((o: DropdownOption) => o.label)
+      .map((o: DropdownOption) => labelToString(o.label))
       .join(', ')
   }
   const found = props.options.find(
     (o): o is Extract<DropdownOption, { value: string | number }> =>
       'value' in o && o.value === props.modelValue,
   ) as DropdownOption | undefined
-  return found?.label ?? ''
+  return labelToString((found?.label as { name?: string })?.name ?? found?.label) ?? ''
 })
 
 function updatePosition(): void {
@@ -380,7 +399,13 @@ onBeforeUnmount(() => {
                     : 'hover:bg-default text-overlay-foreground',
                 ]"
               >
+                <component
+                  v-if="renderOption"
+                  :is="() => renderOption?.('value' in item ? item.value : undefined, item)"
+                  class="flex-1 overflow-hidden"
+                />
                 <span
+                  v-else
                   :class="['flex flex-col font-medium flex-1 overflow-hidden', item.class ?? '']"
                 >
                   <span class="truncate">{{ item.label }}</span>
@@ -408,7 +433,12 @@ onBeforeUnmount(() => {
                   'hover:bg-default text-overlay-foreground',
                 ]"
               >
-                <span class="flex flex-col flex-1 overflow-hidden">
+                <component
+                  v-if="renderOption"
+                  :is="() => renderOption?.('value' in item ? item.value : undefined, item)"
+                  class="flex-1 overflow-hidden"
+                />
+                <span v-else class="flex flex-col flex-1 overflow-hidden">
                   <span class="truncate font-medium">{{ item.label }}</span>
                   <span v-if="item.description" class="text-xs text-muted truncate">{{
                     item.description
@@ -433,7 +463,18 @@ onBeforeUnmount(() => {
                   isSelected(item) ? 'bg-accent/10 text-accent font-medium' : 'hover:bg-default',
                 ]"
               >
+                <!--
+                  renderOption: global render function (value, option) => VNode
+                  Falls back to default label/description display when not provided.
+                  `value` is still emitted on select; `label` still drives the trigger text.
+                -->
+                <component
+                  v-if="renderOption"
+                  :is="() => renderOption?.('value' in item ? item.value : undefined, item)"
+                  class="flex-1 overflow-hidden"
+                />
                 <span
+                  v-else
                   :class="[
                     'flex flex-col flex-1 overflow-hidden font-medium',
                     item.class ?? '',
@@ -445,6 +486,7 @@ onBeforeUnmount(() => {
                     item.description
                   }}</span>
                 </span>
+
                 <span
                   v-if="isSelected(item)"
                   class="flex items-center text-accent shrink-0 ml-auto"

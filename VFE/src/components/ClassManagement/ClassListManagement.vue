@@ -27,7 +27,7 @@ refetch()
       </span>
       <div class="flex justify-end gap-2">
         <ClassListManagement_UpdateCourses :class-id="clazz.id" />
-        <ClassListManagement_UpdateStudents :class-id="clazz.id" />
+        <ClassListManagement_UpdateStudents :clazz="clazz" />
         <ClassListManagement_Update :clazz="clazz" />
       </div>
       <ClassListManagement_Delete :clazz="clazz" />
